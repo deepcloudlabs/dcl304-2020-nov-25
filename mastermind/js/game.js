@@ -13,6 +13,9 @@ class GameViewModel {
         this.secret = this.createSecret();
         this.createSecret = this.createSecret.bind(this);
         this.createDigit = this.createDigit.bind(this);
+        this.initGame = this.initGame.bind(this);
+        this.play = this.play.bind(this);
+        this.createMessage = this.createMessage.bind(this);
     }
 
     play(guess) {
