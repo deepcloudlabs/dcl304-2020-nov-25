@@ -2,39 +2,7 @@ let express = require("express");
 let bodyParser = require("body-parser");
 let logger = require("morgan");
 let mongoose = require("mongoose");
-
-tcKimlikNoValidator = value => {
-    if (value.match("^\\d{11}$") == null) {
-        return false;
-    }
-    let digits = new Array(11);
-    for (let i = 0; i < digits.length; ++i) {
-        digits[i] = value.charCodeAt(i) - 48;
-        if (digits[i] < 0 || digits[i] > 9) {
-            return false;
-        }
-    }
-    let x = digits[0];
-    let y = digits[1];
-    for (let i = 1; i < 5; i++) {
-        x += Number(digits[2 * i]);
-    }
-    for (let i = 2; i <= 4; i++) {
-        y += Number(digits[2 * i - 1]);
-    }
-    let c1 = 7 * x - y;
-    if (c1 % 10 != digits[9]) {
-        return false;
-    }
-    let c2 = 0;
-    for (let i = 0; i < 10; ++i) {
-        c2 += digits[i];
-    }
-    if (c2 % 10 != digits[10]) {
-        return false;
-    }
-    return true;
-};
+let util = require("./utils");
 
 const port = 9001;
 const api = express();
@@ -46,6 +14,17 @@ api.use((req, res, next) => { // CORS
     res.header("Access-Control-Allow-Methods", "HEAD, POST, PUT, GET, DELETE, PATCH");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 });
+
+mongoose.connect(
+    "mongodb://localhost:27017/hrdatabase",
+    {
+        "useNewUrlParser": true,
+        "keepAlive": true,
+        "useCreateIndex": true,
+        "useUnifiedTopology": true
+    }
+)
+
 // Resource -> Aggregate -> Entity (Employee) -> Database
 const employeeSchema = new mongoose.Schema({
     "_id": {
@@ -62,17 +41,20 @@ const employeeSchema = new mongoose.Schema({
         required: true,
         unique: true,
         validate: [
-            tcKimlikNoValidator , 'You must provide a valid identity no'
+            util.tcKimlikNoValidator, 'You must provide a valid identity no'
         ]
     },
-    photo : {
+    photo: {
         type: String,
         required: false
     },
-    iban : {
+    iban: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate: [
+            util.ibanValidator, 'You must provide a valid iban no'
+        ]
     },
     birthYear: {
         type: Number,
@@ -95,6 +77,8 @@ const employeeSchema = new mongoose.Schema({
         default: "Finance"
     }
 });
+
+const Employee = mongoose.model('employees', employeeSchema);
 
 // REST over HTTP -> Integration Technology
 // Single Business Capability -> MSA -> HR
