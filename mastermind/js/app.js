@@ -1,6 +1,6 @@
 class App {
     constructor(gameViewModel) {
-        this.tries = $("#tries");
+        this.tries = jQuery("#tries");
         this.level = $("#gamelevel");
         this.play = $("#play");
         this.guess = $("#guess");
@@ -34,9 +34,18 @@ class App {
     }
 }
 
+// pure js
+window.onload = ()=>{
+    let gameViewModel = new GameViewModel();
+    let app = new App(gameViewModel);
+    app.init();
+}
+
+// jQuery
+/*
 $(document).ready(()=>{
     let gameViewModel = new GameViewModel();
     let app = new App(gameViewModel);
     app.init();
 })
-
+*/
