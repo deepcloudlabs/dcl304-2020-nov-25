@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "server": "nodemon server.js",
-    "server-prod": "node server.js"
+    "server-prod": "node server.js",
+    "binance": "nodemon wsclient.js"
   },
   "author": "Binnur Kurt <binnur.kurt@gmail.com>",
   "license": "MIT",
@@ -16,6 +17,9 @@
     "mongoose": "^5.10.16",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.6",
-    "swagger-ui-express": "^4.1.5"
+    "swagger-ui-express": "^4.1.5",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
+    "ws": "^7.4.0"
   }
 }
