@@ -149,30 +149,49 @@ api.post("/hr/api/v1/employees", (req,res)=>{
    });
 });
 
-// Update: i) PUT ii) PATCH
-api.put("/hr/api/v1/employees", (req,res)=>{
-   let emp = req.body;
-   let identity = emp.identityNo;
-   let updatedEmp = {};
+let updateOrPatchEmployee = (req,res)=>{
+    let emp = req.body;
+    let identity = emp.identityNo;
+    let updatedEmp = {};
 
-   for (let field in emp){
-       if (updatableEmployeeFields.includes(field))
-           updatedEmp[field] = emp[field];
-   }
+    for (let field in emp){
+        if (updatableEmployeeFields.includes(field))
+            updatedEmp[field] = emp[field];
+    }
 
-   Employee.update(
-       {"identityNo": identity},
-       { $set : updatedEmp },
-       { upsert : false},
-       (err,result)=>{
-          res.set("Content-Type", "application/json");
-          if (err){
-              res.status(400).send({"status": err});
-          } else {
-              res.status(200).send(result);
-          }
+    Employee.update(
+        {"identityNo": identity},
+        { $set : updatedEmp },
+        { upsert : false},
+        (err,result)=>{
+            res.set("Content-Type", "application/json");
+            if (err){
+                res.status(400).send({"status": err});
+            } else {
+                res.status(200).send(result);
+            }
         }
-   );
+    );
+};
+
+// Update: i) PUT ii) PATCH
+api.put("/hr/api/v1/employees", updateOrPatchEmployee);
+api.patch("/hr/api/v1/employees", updateOrPatchEmployee);
+
+api.delete("/hr/api/v1/employees/:tckimlikno",(req,res) => {
+   let identity = req.params.tckimlikno;
+   Employee.findOneAndDelete(
+       {"identityNo": identity},
+       {_id: false},
+       (err, emp) => {
+           res.set("Content-Type", "application/json");
+           if (err){
+               res.status(400).send({"status": err});
+           } else {
+               res.status(200).send(emp);
+           }
+       }
+   )
 });
 
 api.listen(port,()=>{
