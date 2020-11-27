@@ -9,6 +9,7 @@ let openApiDoc = require("./swagger-hr-api.json");
 
 const port = 9001;
 const api = express();
+const updatableEmployeeFields = ["salary", "iban", "photo", "department", "fulltime"];
 
 api.use(bodyParser.json({limit: "5mb"}))
 api.use(logger('dev'));
@@ -16,8 +17,9 @@ api.use((req, res, next) => { // CORS
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "HEAD, POST, PUT, GET, DELETE, PATCH");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
-api.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
+api.use("/elma", swaggerUi.serve, swaggerUi.setup(openApiDoc));
 
 mongoose.connect(
     "mongodb://localhost:27017/hrdatabase",
@@ -102,6 +104,7 @@ const Employee = mongoose.model('employees', employeeSchema);
 //                           "Content-Type: application/json" -> Request Body
 api.get("/hr/api/v1/employees/:tckimlikno", async (req,res) => {
     let tckimlikno = req.params.tckimlikno;
+    res.set("Content-Type", "application/json");
     try{
         Employee.findOne(
             {"identityNo": tckimlikno},
@@ -122,6 +125,7 @@ api.get("/hr/api/v1/employees", (req,res) => {
          {"_id": false},
          { "skip": offset , "limit": size},
          async (err, employees) => {
+             res.set("Content-Type", "application/json");
              if (err)
                  res.status(404).send({"status": "Page not found"});
              else
@@ -130,6 +134,48 @@ api.get("/hr/api/v1/employees", (req,res) => {
      )
 })
 
-let server = api.listen(port);
+api.post("/hr/api/v1/employees", (req,res)=>{
+   let emp = req.body;
+   emp._id = emp.identityNo;
+   let employee = new Employee(emp);
+   employee.save((err,newemp)=>{
+      res.set("Content-Type", "application/json");
+      if (err){
+          res.status(400).send({"status": err});
+      } else {
+          delete newemp._id;
+          res.status(200).send(newemp);
+      }
+   });
+});
+
+// Update: i) PUT ii) PATCH
+api.put("/hr/api/v1/employees", (req,res)=>{
+   let emp = req.body;
+   let identity = emp.identityNo;
+   let updatedEmp = {};
+
+   for (let field in emp){
+       if (updatableEmployeeFields.includes(field))
+           updatedEmp[field] = emp[field];
+   }
+
+   Employee.update(
+       {"identityNo": identity},
+       { $set : updatedEmp },
+       { upsert : false},
+       (err,result)=>{
+          res.set("Content-Type", "application/json");
+          if (err){
+              res.status(400).send({"status": err});
+          } else {
+              res.status(200).send(result);
+          }
+        }
+   );
+});
+
+api.listen(port,()=>{
 console.log("REST Api is up and running @ " + port);
+});
 
