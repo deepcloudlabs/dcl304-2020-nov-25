@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RxJs Exercise #5</title>
+    <script type="text/javascript" src="js/lib/rx.all.js"></script>
+    <script type="text/javascript" src="js/lib/rx.dom.js"></script>
+    <script type="text/javascript">
+        // Group movies by their directors and count movies
+        window.onload = () => {
+            Rx.DOM.get("resources/movies.json")
+                .subscribe(data =>
+                    Rx.Observable.from(JSON.parse(data.response))
+                        .flatMap(movie => movie.directors.map(director => [director, movie]))
+                        .groupBy(pair => pair[0].name)
+                        .mergeMap(cluster => cluster.count().map(count => ({director: cluster.key, count})))
+                        .subscribe(o => console.log(`${o.director} has ${o.count} movie(s).`))
+                )
+        }
+    </script>
+</head>
+<body>
+
+</body>
+</html>

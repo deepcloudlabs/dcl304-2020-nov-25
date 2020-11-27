@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RxJs Exercise #4</title>
+    <script type="text/javascript" src="js/lib/rx.all.js"></script>
+    <script type="text/javascript" src="js/lib/rx.dom.js"></script>
+    <script type="text/javascript">
+        window.onload = () => {
+            Rx.DOM.get("resources/countries.json")
+                .subscribe( data => {
+                    let countries = JSON.parse(data.response);
+                    let observableCountries = Rx.Observable.from(countries);
+                    observableCountries.groupBy( country => country.continent )
+                        .mergeMap( list =>{
+                            const list2 = list.count();
+                            return list2.map( count => ({ continent: list.key, count}));
+                        })
+                        .subscribe( console.log );
+                    /*
+                    // Calculate total population of asian countries #1
+                    observableCountries.filter( country => country.continent.localeCompare("Asia") == 0)
+                        .reduce( (acc, country) => acc + country.population, 0)
+                        .subscribe( console.log );
+                    // Calculate total population of asian countries #2
+                    observableCountries.filter( country => country.continent.localeCompare("Asia") == 0)
+                        .map( country => country.population )
+                        .reduce( (acc, pop) => acc + pop, 0)
+                        .subscribe( console.log );
+                    // Filter asian countries and maps each country to its name
+                    observableCountries.filter( country => country.continent.localeCompare("Asia") == 0)
+                                       .map( country => country.name )
+                              .subscribe( console.log );
+
+                     */
+                })
+        }
+    </script>
+</head>
+<body>
+
+</body>
+</html>

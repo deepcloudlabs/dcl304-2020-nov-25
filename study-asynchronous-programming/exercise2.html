@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RxJs Exercise #2</title>
+    <script type="text/javascript" src="js/lib/rx.all.js"></script>
+    <script type="text/javascript">
+        window.onload = () => {
+            let counter = 1;
+            let counterH1 = document.querySelector("#counter1");
+            let counterH2 = document.querySelector("#counter2");
+            let observable = Rx.Observable.fromEvent(
+                document.querySelector("#btn1"),
+                'click'
+            );
+            observable.debounce(1000).subscribe(event => {
+                setTimeout(() => {
+                    counter++;
+                    counterH1.innerHTML = counter;
+                }, 2000);
+            });
+            observable.take(10).subscribe(event => {
+                counterH2.innerHTML = counter;
+            });
+        };
+    </script>
+</head>
+<body>
+<button id="btn1">Click me!</button>
+<p/>
+<h1 id="counter1"></h1>
+<p/>
+<h1 id="counter2"></h1>
+</body>
+</html>
